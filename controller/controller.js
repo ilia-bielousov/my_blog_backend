@@ -17,7 +17,7 @@ async function getDataForCards(req, res) {
       .then((data) => {
         res.
           status(200)
-          .json(data);
+          .json({ data, status: 200 });
       })
   } catch (err) {
     return res.status(500).json({ status: 500 });
