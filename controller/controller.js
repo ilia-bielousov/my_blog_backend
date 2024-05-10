@@ -114,7 +114,6 @@ async function getAllArticles(req, res) {
 }
 
 async function uploadImage(req, res) { // для загрузки файлов
-
   if (!req.files) {
     return res.status(500).send({ msg: "file is not found" })
   }
