@@ -129,6 +129,7 @@ async function convertImageToBase64(filePath) {
 async function getImage(req, res) {
   await Image.find({ imageUrl: req.params.id })
     .then((data) => {
+
       res.
         status(200)
         .json({ data, status: 200 });
@@ -162,15 +163,15 @@ async function uploadImage(req, res) { // для загрузки файлов
   }
 
   const myFile = req.files.file;
-  const ourPath = path.join(__dirname, `../public/`);
+  const ourPath = __dirname.slice(0, -10);
 
-  myFile.mv(`${ourPath}${myFile.name}`,
+  myFile.mv(`${ourPath}/public/${myFile.name}`,
     async function (err) {
       if (err) {
         return res.status(500).send({ msg: "Error occurred" });
       }
 
-      convertImageToBase64(`${ourPath}${myFile.name}`).then(data => saveTheImage(res, data, myFile.name));
+      convertImageToBase64(`${ourPath}/public/${myFile.name}`).then(data => saveTheImage(res, data, myFile.name));
     });
 
 }
