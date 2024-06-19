@@ -3,7 +3,7 @@ import cors from 'cors';
 import mongoose from "mongoose";
 import fileUpload from 'express-fileupload';
 
-import { getDataForCards, getArticle, updateViewOfArticle, createCard, createArticle, getAllCards, getAllArticles, uploadImage, updateArticle } from './controller/controller.js';
+import { getDataForCards, getArticle, updateViewOfArticle, createCard, createArticle, getAllCards, getAllArticles, uploadImage, updateArticle, getImage } from './controller/controller.js';
 
 const port = process.env.PORT || 4000;
 const app = express();
@@ -23,6 +23,8 @@ app.get('/:id', getDataForCards);
 app.get('/programming/:id', getArticle);
 app.get('/projects/:id', getArticle);
 app.get('/modeling/:id', getArticle);
+
+app.get('/upload/:id', getImage);
 
 // для обновления количества просмотров
 app.patch('/programming/:id', updateViewOfArticle);
