@@ -3,7 +3,7 @@ import cors from 'cors';
 import mongoose from "mongoose";
 import fileUpload from 'express-fileupload';
 
-import { getDataForCards, getArticle, updateViewOfArticle, createCard, createArticle, getAllCards, getAllArticles, uploadImage, updateArticle, getImage } from './controller/controller.js';
+import { getDataForCards, getArticle, updateViewOfArticle, createCard, createArticle, getPreview, createPreview, patchPreview, deletePreview, getAllCards, getAllArticles, uploadImage, updateArticle, getImage } from './controller/controller.js';
 
 const port = process.env.PORT || 4000;
 const app = express();
@@ -37,6 +37,11 @@ app.get('/admin/getAllArticles', getAllArticles);
 app.post('/admin/create-card', createCard);
 app.post('/admin/create-article', createArticle);
 app.post('/admin/upload', uploadImage);
+
+app.get('/admin/preview', getPreview);
+app.post('/admin/preview', createPreview);
+app.patch('/admin/preview', patchPreview);
+app.delete('/admin/preview/:id', deletePreview);
 
 // для редактирования статьи
 app.get('/admin/edit-article/:id', getArticle);

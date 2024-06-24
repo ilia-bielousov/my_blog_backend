@@ -2,7 +2,7 @@ import commonjsVariables from 'commonjs-variables-for-esmodules';
 import Article from '../Models/ArticleModel.js';
 import Card from '../Models/CardModel.js';
 import Image from '../Models/ImageModel.js';
-import path from 'path';
+import Preview from '../Models/PreviewModel.js';
 import * as fs from 'fs';
 
 
@@ -94,6 +94,55 @@ async function createArticle(req, res) {
     .catch(() => {
       return res.status(500).json({ status: 500 })
     });
+}
+
+async function createPreview(req, res) {
+  const preview = new Preview({
+    content: [...req.body]
+  });
+
+  preview
+    .save()
+    .then((result) => {
+      res
+        .status(200).json({ id: result._id });
+    })
+    .catch(() => {
+      return res.status(500).json({ status: 500 });
+    })
+}
+
+async function deletePreview(req, res) {
+  try {
+    await Preview.findByIdAndDelete(req.params.id);
+    return res.status(200).send({ status: 200, msg: "ok" });
+
+  } catch (err) {
+    return res.status(500).send({ status: 500, msg: 'not ok' });
+  }
+}
+
+async function patchPreview(req, res) {
+  await Preview.findByIdAndUpdate(req.body._id, { content: req.body.content }) // тут
+    .then((data) => {
+      if (data) {
+        return res.status(200).json({ status: 200 });
+      } else {
+        throw 'error';
+      }
+    })
+    .catch(() => {
+      return res.status(500).json({ status: 500 });
+    })
+}
+
+async function getPreview(req, res) {
+  Preview
+    .find()
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => handleError(res, err));
 }
 
 async function getAllCards(req, res) {
@@ -195,6 +244,10 @@ export { getArticle };
 export { updateViewOfArticle };
 export { createCard };
 export { createArticle };
+export { createPreview };
+export { patchPreview };
+export { deletePreview };
+export { getPreview };
 export { getAllCards };
 export { getAllArticles };
 export { uploadImage };
