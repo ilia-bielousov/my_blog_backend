@@ -14,6 +14,19 @@ const handleError = (res, error) => {
   res.status(500).json({ error });
 }
 
+async function getHome(req, res) {
+  try {
+    await Card
+      .find({ home: "home" })
+      .then((data) => {
+        res.status(200)
+          .json({ data, status: 200 });
+      })
+  } catch (err) {
+    return res.status(500).json({ status: 500 });
+  }
+}
+
 async function getDataForCards(req, res) {
   try {
     await Card
@@ -239,6 +252,7 @@ async function updateArticle(req, res) {
     })
 }
 
+export { getHome };
 export { getDataForCards };
 export { getArticle };
 export { updateViewOfArticle };

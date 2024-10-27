@@ -15,6 +15,9 @@ const Card = new Schema({
   },
   pseudoName: {
     type: String
+  },
+  home: {
+    type: String
   }
 });
 
