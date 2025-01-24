@@ -3,7 +3,9 @@ import cors from 'cors';
 import mongoose from "mongoose";
 import fileUpload from 'express-fileupload';
 
-import { getHome, getDataForCards, getArticle, updateViewOfArticle, createCard, createArticle, getPreview, createPreview, patchPreview, deletePreview, getAllCards, getAllArticles, uploadImage, updateArticle, getImage } from './controller/controller.js';
+import { getHome, getDataForCards, getArticle } from "./controllers/clientController.js";
+import { updateViewOfArticle, createCard, createArticle, getPreview, createPreview, patchPreview, deletePreview, getAllCards, getAllArticles, uploadImage, updateArticle, getImage } from './controllers/adminController.js';
+
 
 const port = process.env.PORT || 4000;
 const app = express();

@@ -18,7 +18,10 @@ const Card = new Schema({
   },
   home: {
     type: String
-  }
+  },
+  // order: {
+  //   type: Number
+  // }
 });
 
 export default model('Card', Card);

@@ -5,51 +5,12 @@ import Image from '../Models/ImageModel.js';
 import Preview from '../Models/PreviewModel.js';
 import * as fs from 'fs';
 
-
 const {
   __dirname,
 } = commonjsVariables(import.meta);
 
 const handleError = (res, error) => {
   res.status(500).json({ error });
-}
-
-async function getHome(req, res) {
-  try {
-    await Card
-      .find({ home: "home" })
-      .then((data) => {
-        res.status(200)
-          .json({ data, status: 200 });
-      })
-  } catch (err) {
-    return res.status(500).json({ status: 500 });
-  }
-}
-
-async function getDataForCards(req, res) {
-  try {
-    await Card
-      .find({ choose: req.params.id })
-      .then((data) => {
-        res.
-          status(200)
-          .json({ data, status: 200 });
-      })
-  } catch (err) {
-    return res.status(500).json({ status: 500 });
-  }
-}
-
-async function getArticle(req, res) {
-  try {
-    const card = await Card.find({ pseudoName: req.params.id });
-    const article = await Article.find({ card: card[0]._id });
-
-    res.status(200).json(article[0]);
-  } catch (err) {
-    res.status(404).json({ status: 404 });
-  }
 }
 
 async function updateViewOfArticle(req, res) {
@@ -225,14 +186,16 @@ async function uploadImage(req, res) { // для загрузки файлов
   }
 
   const myFile = req.files.file;
-  const ourPath = __dirname.slice(0, -10);
+  const ourPath = __dirname.slice(0, -11);
 
   myFile.mv(`${ourPath}/public/${myFile.name}`,
     async function (err) {
       if (err) {
+        console.log(err);
         return res.status(500).send({ msg: "Error occurred" });
       }
 
+      console.log(`${ourPath}/public/${myFile.name}`);
       convertImageToBase64(`${ourPath}/public/${myFile.name}`).then(data => saveTheImage(res, data, myFile.name));
     });
 
@@ -252,9 +215,6 @@ async function updateArticle(req, res) {
     })
 }
 
-export { getHome };
-export { getDataForCards };
-export { getArticle };
 export { updateViewOfArticle };
 export { createCard };
 export { createArticle };
