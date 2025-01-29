@@ -195,7 +195,6 @@ async function uploadImage(req, res) { // для загрузки файлов
         return res.status(500).send({ msg: "Error occurred" });
       }
 
-      console.log(`${ourPath}/public/${myFile.name}`);
       convertImageToBase64(`${ourPath}/public/${myFile.name}`).then(data => saveTheImage(res, data, myFile.name));
     });
 
