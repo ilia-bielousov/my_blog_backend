@@ -188,7 +188,7 @@ async function uploadImage(req, res) { // для загрузки файлов
   const myFile = req.files.file;
   const ourPath = __dirname.slice(0, -11);
 
-  myFile.mv(`${ourPath}/public/${myFile.name}`,
+  myFile.mv(`${ourPath}public/${myFile.name}`,
     async function (err) {
       if (err) {
         console.log(err);
