@@ -1,11 +1,11 @@
 import express from "express";
 import cors from 'cors';
 import mongoose from "mongoose";
-import fileUpload from 'express-fileupload';
 
 import { getHome, getDataForCards, getArticle } from "./controllers/clientController.js";
 import { updateViewOfArticle, createCard, createArticle, getPreview, createPreview, patchPreview, deletePreview, getAllCards, getAllArticles, uploadImage, updateArticle, getImage } from './controllers/adminController.js';
 
+import { upload } from './utils/gcsUpload.js';
 
 const port = process.env.PORT || 4000;
 const app = express();
@@ -18,7 +18,6 @@ mongoose.connect(URL)
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
-app.use(fileUpload());
 
 // для клиента
 app.get('/', getHome);
@@ -39,7 +38,7 @@ app.get('/admin/getAllCards', getAllCards);
 app.get('/admin/getAllArticles', getAllArticles);
 app.post('/admin/create-card', createCard);
 app.post('/admin/create-article', createArticle);
-app.post('/admin/upload', uploadImage);
+app.post('/admin/upload', upload.single('file'), uploadImage);
 
 app.get('/admin/preview', getPreview);
 app.post('/admin/preview', createPreview);

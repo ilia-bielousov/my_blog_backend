@@ -19,9 +19,10 @@ const Card = new Schema({
   home: {
     type: String
   },
-  // order: {
-  //   type: Number
-  // }
+  isPublished: {
+    type: Boolean,
+    default: false // <--- По умолчанию это черновик!
+  },
 });
 
 export default model('Card', Card);

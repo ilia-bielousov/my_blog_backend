@@ -1,13 +1,10 @@
-import commonjsVariables from 'commonjs-variables-for-esmodules';
 import Article from '../Models/ArticleModel.js';
 import Card from '../Models/CardModel.js';
 import Image from '../Models/ImageModel.js';
 import Preview from '../Models/PreviewModel.js';
 import * as fs from 'fs';
 
-const {
-  __dirname,
-} = commonjsVariables(import.meta);
+import { uploadImageToGCS } from '../utils/gcsUpload.js';
 
 const handleError = (res, error) => {
   res.status(500).json({ error });
@@ -180,25 +177,25 @@ async function saveTheImage(res, imageBase64, myFile) {
     });
 }
 
-async function uploadImage(req, res) { // для загрузки файлов
-  if (!req.files) {
-    return res.status(500).send({ msg: "file is not found" })
-  }
+async function uploadImage(req, res) {
+  try {
+    // Multer уже положил файл в req.file
+    if (!req.file) {
+      return res.status(400).json({ message: 'Файл не загружен' });
+    }
 
-  const myFile = req.files.file;
-  const ourPath = __dirname.slice(0, -11);
+    // Отправляем в Google Cloud
+    const imageUrl = await uploadImageToGCS(req.file);
 
-  myFile.mv(`${ourPath}public/${myFile.name}`,
-    async function (err) {
-      if (err) {
-        console.log(err);
-        return res.status(500).send({ msg: "Error occurred" });
-      }
-
-      convertImageToBase64(`${ourPath}/public/${myFile.name}`).then(data => saveTheImage(res, data, myFile.name));
+    res.status(200).json({
+      path: imageUrl,
+      name: req.file.originalname
     });
-
-}
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
+};
 
 async function updateArticle(req, res) {
   await Article.findByIdAndUpdate(req.body._id, { ...req.body })

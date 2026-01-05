@@ -10,7 +10,7 @@ const Article = new Schema({
   views: {
     type: Number,
     default: 0
-  }
+  },
 })
 
 export default model('Article', Article);
