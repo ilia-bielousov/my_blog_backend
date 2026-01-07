@@ -2,7 +2,8 @@ import Article from '../Models/ArticleModel.js';
 import Card from '../Models/CardModel.js';
 import Image from '../Models/ImageModel.js';
 import Preview from '../Models/PreviewModel.js';
-import * as fs from 'fs';
+
+import mongoose from 'mongoose';
 
 import { uploadImageToGCS } from '../utils/gcsUpload.js';
 
@@ -48,6 +49,42 @@ async function createCard(req, res) {
     });
 }
 
+async function updateCard(req, res) {
+  try {
+    // Получаем данные, которые прислал фронтенд
+    const { id, name, description, choose, image, pseudoName } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "Не указан ID карточки" });
+    }
+
+    // Ищем карточку по ID и обновляем поля
+    // { new: true } - чтобы вернуть уже обновленный объект (опционально)
+    const updatedCard = await Card.findByIdAndUpdate(id, {
+      name,
+      description,
+      choose,
+      image,
+      pseudoName
+    }, { new: true });
+
+    if (!updatedCard) {
+      return res.status(404).json({ message: "Карточка не найдена" });
+    }
+
+    // Возвращаем успех
+    res.status(200).json({
+      status: 200,
+      message: "Карточка успешно обновлена",
+      card: updatedCard
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Ошибка при обновлении карточки" });
+  }
+}
+
 async function createArticle(req, res) {
   const ID = req.body.pop();
 
@@ -66,6 +103,68 @@ async function createArticle(req, res) {
       return res.status(500).json({ status: 500 })
     });
 }
+
+async function getArticleByCardId(req, res) {
+  try {
+    const { cardId } = req.params;
+    // Ищем статью, где поле card равно переданному ID
+    const article = await Article.findOne({ card: cardId });
+
+    console.log(cardId);
+    console.log(article);
+
+
+    if (!article) {
+      return res.status(404).json({ message: "Статья еще не создана" });
+    }
+
+    res.status(200).json(article);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Ошибка сервера" });
+  }
+}
+
+async function getArticleForEdit(req, res) {
+  try {
+    const { id } = req.params; // Это может быть _id статьи ИЛИ pseudoName из URL
+
+    // Попробуем найти статью. 
+    // Нам нужно "подтянуть" данные из карточки (populate), чтобы получить имя.
+
+    // Сначала ищем по _id (если в URL передан ID статьи)
+    let article = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      article = await Article.findById(id).populate('card');
+    }
+
+    // Если не нашли по ID, значит это pseudoName. 
+    // Нужно сначала найти карточку, а потом статью этой карточки.
+    if (!article) {
+      const card = await Card.findOne({ pseudoName: id });
+      if (card) {
+        article = await Article.findOne({ card: card._id }).populate('card');
+      }
+    }
+
+    if (!article) {
+      return res.status(404).json({ message: "Статья не найдена" });
+    }
+
+    // Формируем ответ, который ждет фронтенд
+    res.status(200).json({
+      _id: article._id,
+      content: article.content,
+      // ВАЖНО: берем имя из связанной карточки
+      name: article.card ? article.card.name : "Без названия",
+      cardId: article.card ? article.card._id : null
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Ошибка сервера" });
+  }
+};
 
 async function createPreview(req, res) {
   const preview = new Preview({
@@ -136,16 +235,6 @@ async function getAllArticles(req, res) {
     .catch((err) => handleError(res, err));
 }
 
-async function convertImageToBase64(filePath) {
-  try {
-    const data = fs.readFileSync(filePath);
-    return data.toString('base64');
-  } catch (err) {
-    console.error('Error reading file:', err);
-    throw err;
-  }
-}
-
 async function getImage(req, res) {
   await Image.find({ imageUrl: req.params.id })
     .then((data) => {
@@ -161,30 +250,12 @@ async function getImage(req, res) {
     })
 }
 
-async function saveTheImage(res, imageBase64, myFile) {
-  const card = new Image({
-    imageSource: imageBase64,
-    imageUrl: myFile
-  });
-
-  await card.save()
-    .then(() => {
-      res
-        .status(200).json({ status: 200, path: myFile })
-    })
-    .catch(() => {
-      return res.status(500).json({ status: 500 })
-    });
-}
-
 async function uploadImage(req, res) {
   try {
-    // Multer уже положил файл в req.file
     if (!req.file) {
       return res.status(400).json({ message: 'Файл не загружен' });
     }
 
-    // Отправляем в Google Cloud
     const imageUrl = await uploadImageToGCS(req.file);
 
     res.status(200).json({
@@ -198,22 +269,25 @@ async function uploadImage(req, res) {
 };
 
 async function updateArticle(req, res) {
-  await Article.findByIdAndUpdate(req.body._id, { ...req.body })
-    .then((data) => {
-      if (data) {
-        return res.status(200).json({ status: 200 });
-      } else {
-        throw 'error';
-      }
-    })
-    .catch(() => {
-      return res.status(500).json({ status: 500 });
-    })
-}
+  try {
+    const { id, content } = req.body; // Получаем ID статьи и новый контент
+
+    // Обновляем только контент
+    await Article.findByIdAndUpdate(id, { content });
+
+    res.status(200).json({ status: 200, message: "Обновлено" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Ошибка обновления" });
+  }
+};
 
 export { updateViewOfArticle };
 export { createCard };
+export { updateCard };
 export { createArticle };
+export { getArticleByCardId };
+export { getArticleForEdit };
 export { createPreview };
 export { patchPreview };
 export { deletePreview };

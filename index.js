@@ -3,7 +3,7 @@ import cors from 'cors';
 import mongoose from "mongoose";
 
 import { getHome, getDataForCards, getArticle } from "./controllers/clientController.js";
-import { updateViewOfArticle, createCard, createArticle, getPreview, createPreview, patchPreview, deletePreview, getAllCards, getAllArticles, uploadImage, updateArticle, getImage } from './controllers/adminController.js';
+import { updateViewOfArticle, createCard, createArticle, getPreview, createPreview, patchPreview, deletePreview, getAllCards, getAllArticles, uploadImage, updateArticle, getImage, getArticleByCardId, getArticleForEdit, updateCard } from './controllers/adminController.js';
 
 import { upload } from './utils/gcsUpload.js';
 
@@ -37,8 +37,12 @@ app.patch('/modeling/:id', updateViewOfArticle);
 app.get('/admin/getAllCards', getAllCards);
 app.get('/admin/getAllArticles', getAllArticles);
 app.post('/admin/create-card', createCard);
+app.get('/admin/article-by-card/:cardId', getArticleByCardId);
 app.post('/admin/create-article', createArticle);
 app.post('/admin/upload', upload.single('file'), uploadImage);
+app.get('/admin/edit-article/:id', getArticleForEdit);
+app.patch('/admin/edit-article', updateArticle);
+app.patch('/admin/edit-card', updateCard);
 
 app.get('/admin/preview', getPreview);
 app.post('/admin/preview', createPreview);
