@@ -18,6 +18,7 @@ mongoose.connect(URL)
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+app.set('etag', false);
 
 // для клиента
 app.get('/', getHome);

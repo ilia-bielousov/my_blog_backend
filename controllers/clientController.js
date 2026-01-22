@@ -16,15 +16,14 @@ async function getHome(req, res) {
 
 async function getDataForCards(req, res) {
   try {
-    await Card
-      .find({ choose: req.params.id })
-      .then((data) => {
-        res.
-          status(200)
-          .json({ data, status: 200 });
-      })
-  } catch (err) {
-    return res.status(500).json({ status: 500 });
+    // Ищем только опубликованные
+    const cards = await Card.find({ isPublished: true });
+
+    // Гарантируем, что вернем массив, даже если cards почему-то null
+    res.status(200).json({ data: cards, status: 200 });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error loading cards" });
   }
 }
 
