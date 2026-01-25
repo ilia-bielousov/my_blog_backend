@@ -237,6 +237,21 @@ async function patchPreview(req, res) {
     })
 }
 
+async function getPreviewById(req, res) {
+  try {
+    const preview = await Preview.findById(req.params.id);
+
+    if (preview) {
+      return res.status(200).json(preview);
+    } else {
+      return res.status(404).json({ message: "Preview not found" });
+    }
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
 async function getPreview(req, res) {
   Preview
     .find()
@@ -335,6 +350,7 @@ export { getArticleForEdit };
 export { createPreview };
 export { patchPreview };
 export { deletePreview };
+export { getPreviewById };
 export { getPreview };
 export { getAllCards };
 export { getAllArticles };
