@@ -1,6 +1,5 @@
 import Article from '../Models/ArticleModel.js';
 import Card from '../Models/CardModel.js';
-import Image from '../Models/ImageModel.js';
 import Preview from '../Models/PreviewModel.js';
 
 import mongoose from 'mongoose';
@@ -51,15 +50,12 @@ async function createCard(req, res) {
 
 async function updateCard(req, res) {
   try {
-    // Получаем данные, которые прислал фронтенд
     const { id, name, description, choose, image, pseudoName } = req.body;
 
     if (!id) {
       return res.status(400).json({ message: "Не указан ID карточки" });
     }
 
-    // Ищем карточку по ID и обновляем поля
-    // { new: true } - чтобы вернуть уже обновленный объект (опционально)
     const updatedCard = await Card.findByIdAndUpdate(id, {
       name,
       description,
@@ -72,7 +68,6 @@ async function updateCard(req, res) {
       return res.status(404).json({ message: "Карточка не найдена" });
     }
 
-    // Возвращаем успех
     res.status(200).json({
       status: 200,
       message: "Карточка успешно обновлена",
@@ -85,28 +80,22 @@ async function updateCard(req, res) {
   }
 }
 
-// controllers/adminController.js
-
 async function createArticle(req, res) {
   try {
-    // Фронтенд присылает { cardId, content, isPublished }
     const { cardId, content, isPublished } = req.body;
-
-    console.log("Creating article for Card ID:", cardId); // Для отладки
 
     if (!cardId) {
       return res.status(400).json({ message: "Не передан ID карточки (cardId)" });
     }
 
     const newArticle = new Article({
-      card: cardId, // Сюда подставляется ID
+      card: cardId,
       content: content || [],
       views: 0
     });
 
     const savedArticle = await newArticle.save();
 
-    // Если сразу публикуем — обновляем карточку
     if (typeof isPublished !== 'undefined') {
       await Card.findByIdAndUpdate(cardId, { isPublished });
     }
@@ -126,12 +115,7 @@ async function createArticle(req, res) {
 async function getArticleByCardId(req, res) {
   try {
     const { cardId } = req.params;
-    // Ищем статью, где поле card равно переданному ID
     const article = await Article.findOne({ card: cardId });
-
-    console.log(cardId);
-    console.log(article);
-
 
     if (!article) {
       return res.status(404).json({ message: "Статья еще не создана" });
@@ -147,46 +131,36 @@ async function getArticleByCardId(req, res) {
 async function getArticleForEdit(req, res) {
   try {
     const { id } = req.params;
-    console.log(`[GET EDIT] Запрос данных для: ${id}`);
 
-    // 1. Ищем КАРТОЧКУ (по ID или pseudoName)
     let card = null;
     if (mongoose.Types.ObjectId.isValid(id)) {
       card = await Card.findById(id);
     }
 
-    // Если по ID не нашли, ищем по pseudoName
     if (!card) {
       card = await Card.findOne({ pseudoName: id });
     }
 
     if (!card) {
-      console.log(`[GET EDIT] Карточка не найдена!`);
       return res.status(404).json({ message: "Карточка не найдена" });
     }
 
-    console.log(`[GET EDIT] Карточка найдена: ${card.name} (ID: ${card._id})`);
-
-    // 2. Ищем СТАТЬЮ
     const article = await Article.findOne({ card: card._id });
 
     if (article) {
-      console.log(`[GET EDIT] Статья существует (ID: ${article._id})`);
       return res.status(200).json({
         _id: article._id,
         content: article.content,
         name: card.name,
-        cardId: card._id, // <--- ВАЖНО
+        cardId: card._id,
         isPublished: card.isPublished
       });
     } else {
-      console.log(`[GET EDIT] Статьи нет. Возвращаем пустышку с cardId: ${card._id}`);
-      // Возвращаем пустышку, ОБЯЗАТЕЛЬНО с cardId
       return res.status(200).json({
         _id: null,
         content: [],
         name: card.name,
-        cardId: card._id, // <--- ВОТ ЗДЕСЬ БЫЛА ПРОБЛЕМА
+        cardId: card._id,
         isPublished: card.isPublished
       });
     }
@@ -281,21 +255,6 @@ async function getAllArticles(req, res) {
     .catch((err) => handleError(res, err));
 }
 
-async function getImage(req, res) {
-  await Image.find({ imageUrl: req.params.id })
-    .then((data) => {
-
-      res.
-        status(200)
-        .json({ data, status: 200 });
-    })
-    .catch((err) => {
-      res.
-        status(500)
-        .json({ status: 500 })
-    })
-}
-
 async function uploadImage(req, res) {
   try {
     if (!req.file) {
@@ -314,23 +273,18 @@ async function uploadImage(req, res) {
   }
 };
 
-// controllers/adminController.js
 
 async function updateArticle(req, res) {
   try {
-    // Теперь мы ждем еще и флаг isPublished (true/false)
     const { id, content, isPublished } = req.body;
 
-    // 1. Обновляем контент самой статьи
     const article = await Article.findByIdAndUpdate(id, { content }, { new: true });
 
     if (!article) {
       return res.status(404).json({ message: "Статья не найдена" });
     }
 
-    // 2. Если передан флаг публикации, обновляем связанную КАРТОЧКУ
     if (typeof isPublished !== 'undefined') {
-      // У статьи есть поле card (ObjectId), используем его
       await Card.findByIdAndUpdate(article.card, { isPublished: isPublished });
     }
 
@@ -356,4 +310,3 @@ export { getAllCards };
 export { getAllArticles };
 export { uploadImage };
 export { updateArticle };
-export { getImage };

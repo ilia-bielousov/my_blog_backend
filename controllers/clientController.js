@@ -16,10 +16,8 @@ async function getHome(req, res) {
 
 async function getDataForCards(req, res) {
   try {
-    // Ищем только опубликованные
     const cards = await Card.find({ isPublished: true });
 
-    // Гарантируем, что вернем массив, даже если cards почему-то null
     res.status(200).json({ data: cards, status: 200 });
   } catch (error) {
     console.error(error);

@@ -3,7 +3,7 @@ import cors from 'cors';
 import mongoose from "mongoose";
 
 import { getHome, getDataForCards, getArticle } from "./controllers/clientController.js";
-import { updateViewOfArticle, createCard, createArticle, getPreview, createPreview, patchPreview, deletePreview, getAllCards, getAllArticles, uploadImage, updateArticle, getImage, getArticleByCardId, getArticleForEdit, updateCard, getPreviewById } from './controllers/adminController.js';
+import { updateViewOfArticle, createCard, createArticle, getPreview, createPreview, patchPreview, deletePreview, getAllCards, getAllArticles, uploadImage, updateArticle, getArticleByCardId, getArticleForEdit, updateCard, getPreviewById } from './controllers/adminController.js';
 
 import { upload } from './utils/gcsUpload.js';
 
@@ -26,8 +26,6 @@ app.get('/:id', getDataForCards);
 app.get('/programming/:id', getArticle);
 app.get('/projects/:id', getArticle);
 app.get('/modeling/:id', getArticle);
-
-app.get('/upload/:id', getImage);
 
 // для обновления количества просмотров
 app.patch('/programming/:id', updateViewOfArticle);
